@@ -105,15 +105,6 @@ const App: React.FC = () => {
     }
   };
 
-  const handleVerifySuccess = () => {
-    if (currentUser) {
-      const updatedUser = { ...currentUser, emailVerified: true };
-      setCurrentUser(updatedUser);
-      localStorage.setItem("sessionUser", JSON.stringify(updatedUser));
-      setShowEmailVerify(false);
-    }
-  };
-
   const checkVersion = () => {
       const savedVersion = localStorage.getItem('ordem_patch_version');
       if (savedVersion !== CURRENT_VERSION) {
@@ -241,7 +232,7 @@ const App: React.FC = () => {
   }
 
   if (resetToken) {
-    return <ResetPasswordScreen token={resetToken} onSuccess={() => setResetToken(null)} />;
+    return <ResetPasswordScreen onSuccess={() => setResetToken(null)} />;
   }
 
   if (!currentUser) {
