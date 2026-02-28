@@ -22,7 +22,7 @@ export const EmailLinkModal: React.FC<EmailLinkModalProps> = ({ userId, onSucces
     setError('');
 
     try {
-      await dbService.linkAccount(email, password);
+      await dbService.linkAccount(userId, email, password);
       onSuccess(email);
     } catch (err: any) {
       setError(err.message || 'Erro ao vincular e-mail.');

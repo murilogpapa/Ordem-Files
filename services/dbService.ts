@@ -15,6 +15,10 @@ export const dbService = {
   
   // --- AUTHENTICATION (V3.0) ---
 
+  subscribeToAuthChanges: (callback: (event: string, session: any) => void) => {
+      return supabase.auth.onAuthStateChange(callback);
+  },
+
   register: async (username: string, password: string): Promise<User> => {
       const passwordHash = await hashPassword(password);
       const { data, error } = await supabase
@@ -65,23 +69,29 @@ export const dbService = {
 
   // --- Email & Security Features (Supabase Auth) ---
 
-  linkAccount: async (email: string, password: string): Promise<void> => {
+  linkAccount: async (userId: string, email: string, password: string): Promise<void> => {
       // Create a Supabase Auth user. This sends a confirmation email automatically.
       const { data, error } = await supabase.auth.signUp({
           email: email,
           password: password,
+          options: {
+            emailRedirectTo: window.location.origin
+          }
       });
 
       if (error) throw new Error(error.message);
 
-      // Note: We don't need to manually update public.users here immediately if we rely on the user confirming email.
-      // However, to keep UI in sync or if we want to track pending state:
-      // We can update the public user record with the email.
-      // But since we don't have the current user ID here easily unless passed, 
-      // we assume this is called from a context where we might want to update the public record.
-      // Actually, let's just let Supabase handle the auth part. 
-      // The public.users table will be updated via triggers or manual sync if needed, 
-      // but for "linking", we are essentially creating the Auth account.
+      // Update public.users table to reflect the linked email
+      const { error: updateError } = await supabase
+          .from('users')
+          .update({ email: email })
+          .eq('id', userId);
+
+      if (updateError) {
+          console.error("Failed to update public user email:", updateError);
+          // We don't throw here because the auth account was created successfully.
+          // The user might need to retry or we can handle it silently.
+      }
   },
 
   requestPasswordReset: async (email: string): Promise<void> => {
@@ -93,8 +103,20 @@ export const dbService = {
   },
 
   updatePassword: async (password: string): Promise<void> => {
-      const { error } = await supabase.auth.updateUser({ password: password });
+      // 1. Update Auth Password
+      const { data: authData, error } = await supabase.auth.updateUser({ password: password });
       if (error) throw new Error(error.message);
+
+      // 2. Update Public User Hash (to keep username login working)
+      if (authData.user && authData.user.email) {
+          const newHash = await hashPassword(password);
+          const { error: dbError } = await supabase
+              .from('users')
+              .update({ password_hash: newHash })
+              .eq('email', authData.user.email);
+          
+          if (dbError) console.error("Error syncing password hash:", dbError);
+      }
   },
 
   // --- Campaign Members Management ---

@@ -14,7 +14,7 @@ import { ResetPasswordScreen } from './components/ResetPasswordScreen';
 
 type ViewState = 'campaign-list' | 'create-campaign' | 'campaign-view' | 'create-character' | 'character-sheet' | 'character-lock';
 
-const CURRENT_VERSION = 'v3.0';
+const CURRENT_VERSION = 'v3.1';
 
 const App: React.FC = () => {
   // Auth State
@@ -42,20 +42,39 @@ const App: React.FC = () => {
   
   // Initial Load & Auth Check
   useEffect(() => {
-    // Check for Reset Token in URL
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    if (token) {
-      setResetToken(token);
-      // Clean URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-      return;
-    }
+    console.log("App mounted. URL:", window.location.href);
+    
+    // Check for Reset Password Route or Event
+    const checkResetPath = () => {
+        if (window.location.pathname === '/reset-password' || window.location.hash.includes('type=recovery')) {
+            setResetToken('true'); 
+            // Clean URL visually but keep state
+            window.history.replaceState({}, document.title, '/');
+        }
+    };
+
+    checkResetPath();
+
+    const { data: authListener } = dbService.subscribeToAuthChanges((event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+            setResetToken('true');
+        }
+        // Update user session on auth changes (like login via link)
+        if (event === 'SIGNED_IN' && session?.user) {
+             // We can fetch our custom user profile here if needed, 
+             // but for now we rely on the existing logic or page reload.
+             // Ideally, we should sync currentUser here.
+        }
+    });
 
     const sessionUser = localStorage.getItem("sessionUser");
     if (sessionUser) {
         setCurrentUser(JSON.parse(sessionUser));
     }
+
+    return () => {
+        authListener.subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -288,17 +307,24 @@ const App: React.FC = () => {
               
               <div className="space-y-8 font-mono text-sm text-zinc-300 leading-relaxed">
                 <section>
-                    <h3 className="text-white font-bold text-lg mb-3 uppercase tracking-wider border-l-4 border-white pl-3">SISTEMA DE AUTENTICAÇÃO V3.0</h3>
+                    <h3 className="text-white font-bold text-lg mb-3 uppercase tracking-wider border-l-4 border-white pl-3">ATUALIZAÇÃO DE SEGURANÇA V3.1</h3>
+                    <ul className="list-disc pl-5 space-y-2">
+                        <li><strong className="text-white">Vinculação de E-mail:</strong> Agora é possível vincular um e-mail à sua conta de forma segura, com verificação automática.</li>
+                        <li><strong className="text-white">Recuperação de Senha:</strong> Novo fluxo de "Esqueci minha senha" com envio de link seguro para redefinição.</li>
+                        <li><strong className="text-white">Segurança Reforçada:</strong> Remoção de dependências de SMTP inseguras e melhoria na proteção de dados dos usuários.</li>
+                    </ul>
+                </section>
+                <section>
+                    <h3 className="text-ordem-purple font-bold text-lg mb-3 uppercase tracking-wider border-l-4 border-ordem-purple pl-3">SISTEMA DE AUTENTICAÇÃO V3.0</h3>
                     <ul className="list-disc pl-5 space-y-2">
                         <li><strong className="text-white">Login & Cadastro:</strong> Novo sistema de contas de usuário. Cadastre-se com um username único para acessar suas campanhas.</li>
                         <li><strong className="text-white">Convites por Username:</strong> Mestres agora convidam jogadores diretamente pelo nome de usuário. Não é mais necessário compartilhar senhas de campanha.</li>
                         <li><strong className="text-white">Permissões:</strong> Jogadores veem apenas campanhas onde foram convidados. Mestres veem campanhas que criaram ou onde foram promovidos.</li>
                         <li><strong className="text-white">Admin Global:</strong> Adicionado usuário 'admin' para gerenciamento total do sistema.</li>
-                        <li><strong className="text-white">Senhas Antigas Removidas:</strong> O sistema de senha por ficha/campanha foi descontinuado em favor do login seguro.</li>
                     </ul>
                 </section>
                 <section>
-                    <h3 className="text-ordem-purple font-bold text-lg mb-3 uppercase tracking-wider border-l-4 border-ordem-purple pl-3">COMBATE & MAPA</h3>
+                    <h3 className="text-ordem-blood font-bold text-lg mb-3 uppercase tracking-wider border-l-4 border-ordem-blood pl-3">COMBATE & MAPA</h3>
                     <ul className="list-disc pl-5 space-y-2">
                         <li><strong className="text-white">Névoa de Guerra:</strong> Nova ferramenta para o Mestre criar áreas de escuridão (Fog of War) que escondem partes do mapa dos jogadores.</li>
                         <li><strong className="text-white">Cenas (Presets):</strong> Sistema de salvar/carregar estados do mapa.</li>
