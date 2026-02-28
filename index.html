@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ordem Files | Arquivo Paranormal</title>
+    
+    <!-- Favicon (Ghost Icon) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 10h.01'/><path d='M15 10h.01'/><path d='M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z'/></svg>" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ordem: {
+                black: '#020202',
+                dark: '#0a0a0b',
+                panel: '#101012',
+                border: '#2a2a2e',
+                purple: '#7c3aed', // Energy
+                purpleglow: '#a78bfa',
+                green: '#00ff9d', // Knowledge/Ectoplasm
+                greenglow: '#6ee7b7',
+                blood: '#b7002c', // Blood
+                fear: '#ffffff', // Fear (White/Contrast)
+                death: '#52525b', // Death (Grey/Spiral)
+                text: '#e4e4e7',
+                muted: '#71717a'
+              }
+            },
+            fontFamily: {
+              title: ['"Cinzel"', 'serif'],
+              mono: ['"Rajdhani"', 'monospace'], // Using Rajdhani as the "technical" font
+              sans: ['"Rajdhani"', 'sans-serif'],
+            },
+            animation: {
+              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'glitch': 'glitch 1s linear infinite',
+              'spin-slow': 'spin 12s linear infinite',
+              'float': 'float 6s ease-in-out infinite',
+            },
+            keyframes: {
+              glitch: {
+                '2%, 64%': { transform: 'translate(2px,0) skew(0deg)' },
+                '4%, 60%': { transform: 'translate(-2px,0) skew(0deg)' },
+                '62%': { transform: 'translate(0,0) skew(5deg)' },
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #000000;
+        color: #e4e4e7;
+        font-family: 'Rajdhani', sans-serif;
+        overflow-x: hidden;
+      }
+
+      /* Noise/Grain Overlay */
+      .bg-noise {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 50;
+        opacity: 0.03;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      }
+
+      /* Scanline Effect */
+      .scanline {
+        width: 100%;
+        height: 100px;
+        z-index: 51;
+        background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(0,0,0,0) 100%);
+        opacity: 0.1;
+        background-size: 100% 4px;
+        animation: scanline 10s linear infinite;
+        position: fixed;
+        pointer-events: none;
+        top: -100px;
+      }
+
+      @keyframes scanline {
+        0% { top: -100px; }
+        100% { top: 100%; }
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #050505;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2a2a2e;
+        border: 1px solid #000;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #7c3aed; /* Purple hover */
+      }
+
+      /* Typography Utilities */
+      .font-title { font-family: 'Cinzel', serif; }
+      .font-tech { font-family: 'Rajdhani', sans-serif; }
+      
+      .text-glow-purple { text-shadow: 0 0 10px rgba(124, 58, 237, 0.5); }
+      .text-glow-green { text-shadow: 0 0 10px rgba(0, 255, 157, 0.5); }
+      .border-glow-purple { box-shadow: 0 0 15px rgba(124, 58, 237, 0.2); }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "url": "https://aistudiocdn.com/url@^0.11.4",
+    "cors": "https://aistudiocdn.com/cors@^2.8.5",
+    "body-parser": "https://aistudiocdn.com/body-parser@^2.2.0",
+    "express": "https://aistudiocdn.com/express@^5.1.0",
+    "fs": "https://aistudiocdn.com/fs@^0.0.1-security",
+    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "vite": "https://aistudiocdn.com/vite@^7.2.4",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
+    "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.94.1/+esm"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <div class="bg-noise"></div>
+    <div class="scanline"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
