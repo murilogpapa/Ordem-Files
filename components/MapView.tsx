@@ -371,6 +371,12 @@ export const MapView: React.FC<Props> = ({ campaign, characters, isAdmin, curren
       await updateCampaign({ ...mapConfig, tokens: newTokens });
   };
 
+  const updateTokenImage = async (tokenId: string, newUrl: string) => {
+      const newTokens = tokens.map(t => t.id === tokenId ? { ...t, imageUrl: newUrl } : t);
+      setTokens(newTokens);
+      await updateCampaign({ ...mapConfig, tokens: newTokens });
+  };
+
   const saveMapUrl = async () => {
       await updateCampaign({ ...mapConfig, imageUrl: mapUrlInput });
   };
@@ -759,6 +765,55 @@ export const MapView: React.FC<Props> = ({ campaign, characters, isAdmin, curren
                                               </div>
                                           </div>
                                       )}
+                                  </div>
+
+                                  <div className="border-t border-zinc-800 pt-2">
+                                      <label className="text-[10px] uppercase font-bold text-zinc-500 mb-2 block">Monstros em Campo</label>
+                                      
+                                      <div className="flex gap-2 mb-2">
+                                          <Input 
+                                              value={newMonster.name} 
+                                              onChange={e => setNewMonster({...newMonster, name: e.target.value})} 
+                                              placeholder="Nome..." 
+                                              className="text-xs h-7 bg-black"
+                                          />
+                                          <Button onClick={createMonster} variant="primary" className="h-7 px-2"><Plus className="w-3 h-3"/></Button>
+                                      </div>
+
+                                      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                                          {tokens.filter(t => t.type === 'MONSTER').map(monster => (
+                                              <div key={monster.id} className="bg-black/40 p-2 border border-ordem-blood/30 flex flex-col gap-2">
+                                                  <div className="flex justify-between items-center">
+                                                      <span className="text-xs font-bold text-ordem-blood truncate w-24">{monster.label}</span>
+                                                      <div className="flex gap-1">
+                                                          <button onClick={() => toggleTokenVisibility(monster.id)} className={`p-1 rounded ${monster.visible !== false ? 'text-ordem-green' : 'text-zinc-600'}`}>{monster.visible !== false ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}</button>
+                                                          <button onClick={() => removeTokenFromMap(monster.id)} className="p-1 rounded text-zinc-600 hover:text-ordem-blood"><Trash2 className="w-3 h-3" /></button>
+                                                      </div>
+                                                  </div>
+                                                  
+                                                  <div className="flex flex-col gap-2 border-t border-zinc-800 pt-1 mt-1">
+                                                      <div className="flex items-center justify-between">
+                                                          <div className="flex items-center gap-1">
+                                                              <button onClick={() => updateTokenSize(monster.id, -0.1)} className="text-zinc-500 hover:text-white"><Minus className="w-3 h-3"/></button>
+                                                              <span className="text-[10px] text-zinc-400 font-mono">{(monster.size || 1).toFixed(1)}x</span>
+                                                              <button onClick={() => updateTokenSize(monster.id, 0.1)} className="text-zinc-500 hover:text-white"><Plus className="w-3 h-3"/></button>
+                                                          </div>
+                                                          <button onClick={() => toggleTokenFlip(monster.id)} className={`text-zinc-500 hover:text-white ${monster.flip ? 'text-ordem-purple' : ''}`}><ArrowLeftRight className="w-3 h-3" /></button>
+                                                      </div>
+
+                                                      <div className="flex gap-1">
+                                                          <Input 
+                                                              value={monster.imageUrl || ''} 
+                                                              onChange={(e) => updateTokenImage(monster.id, e.target.value)} 
+                                                              placeholder="URL da Imagem..." 
+                                                              className="text-[9px] h-6 bg-black border-zinc-800"
+                                                          />
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          ))}
+                                          {tokens.filter(t => t.type === 'MONSTER').length === 0 && <span className="text-[9px] text-zinc-600 italic text-center block">Nenhum monstro.</span>}
+                                      </div>
                                   </div>
 
                                   <div className="border-t border-zinc-800 pt-2">

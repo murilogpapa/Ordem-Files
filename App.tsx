@@ -12,6 +12,8 @@ import { AuthScreen } from './components/AuthScreen';
 import { EmailLinkModal } from './components/EmailLinkModal';
 import { ResetPasswordScreen } from './components/ResetPasswordScreen';
 
+import { UserProfileModal } from './components/UserProfileModal';
+
 type ViewState = 'campaign-list' | 'create-campaign' | 'campaign-view' | 'create-character' | 'character-sheet' | 'character-lock';
 
 const CURRENT_VERSION = 'v3.1';
@@ -19,6 +21,7 @@ const CURRENT_VERSION = 'v3.1';
 const App: React.FC = () => {
   // Auth State
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const [view, setView] = useState<ViewState>('campaign-list');
   
@@ -361,6 +364,18 @@ const App: React.FC = () => {
               </div>
               
               <div className="mt-6 md:mt-0 flex gap-4 items-center">
+                 <button 
+                    onClick={() => setShowProfileModal(true)}
+                    className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-700 hover:border-ordem-purple overflow-hidden transition-all relative group"
+                    title="Editar Perfil"
+                 >
+                    {currentUser.avatarUrl ? (
+                        <img src={currentUser.avatarUrl} className="w-full h-full object-cover" alt="Avatar" />
+                    ) : (
+                        <UserIcon className="w-5 h-5 text-zinc-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:text-ordem-purple" />
+                    )}
+                 </button>
+
                  <Button onClick={() => setView('create-campaign')} className="flex items-center gap-2">
                     <Plus className="w-5 h-5" /> Nova Campanha
                  </Button>
@@ -369,6 +384,17 @@ const App: React.FC = () => {
                  </button>
               </div>
             </header>
+
+            {showProfileModal && (
+                <UserProfileModal 
+                    user={currentUser} 
+                    onClose={() => setShowProfileModal(false)}
+                    onUpdate={(updated) => {
+                        setCurrentUser(updated);
+                        localStorage.setItem("sessionUser", JSON.stringify(updated));
+                    }}
+                />
+            )}
 
             {loading ? (
               <div className="flex flex-col items-center justify-center py-32 space-y-4">

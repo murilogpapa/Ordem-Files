@@ -48,14 +48,15 @@ export const dbService = {
           username: data.username,
           isGlobalAdmin: data.username === 'admin',
           email: data.email,
-          emailVerified: data.email_verified
+          emailVerified: data.email_verified,
+          avatarUrl: data.avatar_url
       };
   },
 
   getUserByUsername: async (username: string): Promise<User | null> => {
       const { data, error } = await supabase
         .from('users')
-        .select('id, username, email, email_verified')
+        .select('id, username, email, email_verified, avatar_url')
         .eq('username', username)
         .single();
       if (error) return null;
@@ -63,7 +64,8 @@ export const dbService = {
         id: data.id,
         username: data.username,
         email: data.email,
-        emailVerified: data.email_verified
+        emailVerified: data.email_verified,
+        avatarUrl: data.avatar_url
       };
   },
 
@@ -117,6 +119,26 @@ export const dbService = {
           
           if (dbError) console.error("Error syncing password hash:", dbError);
       }
+  },
+
+  // --- USER PROFILE MANAGEMENT ---
+  updateUserProfile: async (userId: string, updates: { username?: string, avatarUrl?: string, email?: string }): Promise<void> => {
+      const payload: any = {};
+      if (updates.username !== undefined) payload.username = updates.username;
+      if (updates.avatarUrl !== undefined) payload.avatar_url = updates.avatarUrl;
+      if (updates.email !== undefined) payload.email = updates.email;
+
+      const { error } = await supabase
+          .from('users')
+          .update(payload)
+          .eq('id', userId);
+      
+      if (error) throw new Error(error.message);
+  },
+
+  updateUserEmail: async (email: string): Promise<void> => {
+      const { error } = await supabase.auth.updateUser({ email: email });
+      if (error) throw new Error(error.message);
   },
 
   // --- Campaign Members Management ---

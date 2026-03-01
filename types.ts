@@ -8,6 +8,7 @@ export interface User {
   isGlobalAdmin?: boolean; // Derived from username 'admin'
   email?: string;
   emailVerified?: boolean;
+  avatarUrl?: string;
 }
 
 export interface CampaignMember {
