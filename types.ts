@@ -151,6 +151,8 @@ export interface MapToken {
   y: number; // Percentage 0-100
   label: string;
   imageUrl: string;
+  imageUrl2?: string; // Variant 2
+  imageUrl3?: string; // Variant 3
   size: number; // Scale multiplier (default 1)
   flip?: boolean; // Mirror Image
   rotation?: number; // Degrees

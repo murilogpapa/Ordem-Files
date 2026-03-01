@@ -371,8 +371,8 @@ export const MapView: React.FC<Props> = ({ campaign, characters, isAdmin, curren
       await updateCampaign({ ...mapConfig, tokens: newTokens });
   };
 
-  const updateTokenImage = async (tokenId: string, newUrl: string) => {
-      const newTokens = tokens.map(t => t.id === tokenId ? { ...t, imageUrl: newUrl } : t);
+  const updateTokenImageUrl = async (tokenId: string, field: 'imageUrl' | 'imageUrl2' | 'imageUrl3', newUrl: string) => {
+      const newTokens = tokens.map(t => t.id === tokenId ? { ...t, [field]: newUrl } : t);
       setTokens(newTokens);
       await updateCampaign({ ...mapConfig, tokens: newTokens });
   };
@@ -602,6 +602,10 @@ export const MapView: React.FC<Props> = ({ campaign, characters, isAdmin, curren
                     if (variant === 2 && anyCharData.tokenUrl2) displayImage = anyCharData.tokenUrl2;
                     else if (variant === 3 && anyCharData.tokenUrl3) displayImage = anyCharData.tokenUrl3;
                     else displayImage = anyCharData.tokenUrl || anyCharData.imageUrl || displayImage;
+                } else if (token.type === 'MONSTER') {
+                    const variant = token.variant || 1;
+                    if (variant === 2 && token.imageUrl2) displayImage = token.imageUrl2;
+                    else if (variant === 3 && token.imageUrl3) displayImage = token.imageUrl3;
                 }
 
                 const zIndex = draggingTokenId === token.id ? 9999 : (10 + Math.floor(token.y));
@@ -801,11 +805,18 @@ export const MapView: React.FC<Props> = ({ campaign, characters, isAdmin, curren
                                                           <button onClick={() => toggleTokenFlip(monster.id)} className={`text-zinc-500 hover:text-white ${monster.flip ? 'text-ordem-purple' : ''}`}><ArrowLeftRight className="w-3 h-3" /></button>
                                                       </div>
 
+                                                      {/* Variants */}
+                                                      <div className="flex items-center gap-1 justify-center bg-black/50 p-1 rounded">
+                                                          <button onClick={() => setTokenVariant(monster.id, 1)} className={`text-[10px] w-5 h-5 rounded ${(!monster.variant || monster.variant === 1) ? 'bg-ordem-purple text-white' : 'text-zinc-500 hover:bg-white/10'}`}>V1</button>
+                                                          <button onClick={() => setTokenVariant(monster.id, 2)} className={`text-[10px] w-5 h-5 rounded ${monster.variant === 2 ? 'bg-ordem-purple text-white' : 'text-zinc-500 hover:bg-white/10'}`}>V2</button>
+                                                          <button onClick={() => setTokenVariant(monster.id, 3)} className={`text-[10px] w-5 h-5 rounded ${monster.variant === 3 ? 'bg-ordem-purple text-white' : 'text-zinc-500 hover:bg-white/10'}`}>V3</button>
+                                                      </div>
+
                                                       <div className="flex gap-1">
                                                           <Input 
-                                                              value={monster.imageUrl || ''} 
-                                                              onChange={(e) => updateTokenImage(monster.id, e.target.value)} 
-                                                              placeholder="URL da Imagem..." 
+                                                              value={(!monster.variant || monster.variant === 1) ? (monster.imageUrl || '') : (monster.variant === 2 ? (monster.imageUrl2 || '') : (monster.imageUrl3 || ''))} 
+                                                              onChange={(e) => updateTokenImageUrl(monster.id, (!monster.variant || monster.variant === 1) ? 'imageUrl' : (monster.variant === 2 ? 'imageUrl2' : 'imageUrl3'), e.target.value)} 
+                                                              placeholder={`URL V${monster.variant || 1}...`} 
                                                               className="text-[9px] h-6 bg-black border-zinc-800"
                                                           />
                                                       </div>
